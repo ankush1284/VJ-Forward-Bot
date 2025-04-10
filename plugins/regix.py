@@ -8,6 +8,16 @@ import math
 import time, re
 import asyncio 
 import logging
+# Existing imports (DON'T TOUCH these)
+from config import Config, temp
+from database import db
+from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+
+# ▼ ▼ ▼ ADD THESE 2 NEW LINES BELOW ▼ ▼ ▼
+from plugins.thumbnail_enforcer import validate_thumbnail
+from plugins.caption_manager import apply_caption_rules
+# ▲ ▲ ▲ KEEP EXISTING IMPORTS ABOVE ▲ ▲ ▲
 import random
 from .utils import STS
 from database import Db, db
