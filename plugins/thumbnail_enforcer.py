@@ -14,6 +14,7 @@ async def delete_user_thumbnail(user_id: int):
     await db.update_configs(user_id, 'thumbnail_file_id', None)
 
 def is_valid_thumbnail(message: Message) -> bool:
+    # Accept only photos or image documents as thumbnails
     if message.photo:
         return True
     elif message.document and message.document.mime_type.startswith("image/"):
