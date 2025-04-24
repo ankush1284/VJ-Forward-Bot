@@ -12,8 +12,12 @@ async def delete_user_thumbnail(user_id: int):
     await db.update_configs(user_id, 'thumbnail_file_id', None)
 
 def is_valid_thumbnail(message: Message) -> bool:
-    if message.photo:
+    if getattr(message, "photo", None):
         return True
-    elif message.document and message.document.mime_type.startswith("image/"):
+    elif getattr(message, "document", None) and getattr(message.document, "mime_type", "").startswith("image/"):
         return True
     return False
+
+# Alias for compatibility with old code
+def validate_thumbnail(message: Message) -> bool:
+    return is_valid_thumbnail(message)
