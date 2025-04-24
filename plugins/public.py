@@ -17,13 +17,15 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQ
 # --- Caption Preset import ---
 from plugins.caption_manager import apply_caption_rules
 
-# Don't Remove Credit Tg - @VJ_Botz
-# Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
-# Ask Doubt on telegram @KingVJ01
+# --- Thumbnail Preset import ---
+from plugins.thumbnail_enforcer import (
+    is_valid_thumbnail, save_user_thumbnail, get_user_thumbnail, delete_user_thumbnail
+)
 
 def main_buttons():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("📝 Caption Preset", callback_data="caption_preset")],
+        [InlineKeyboardButton("🖼️ Thumbnail Preset", callback_data="thumbnail_preset")],
         # ... add your other settings buttons here ...
     ])
 
@@ -182,6 +184,44 @@ async def caption_off(bot, query):
     await query.answer("Caption OFF.")
     await caption_preset_menu(bot, query)
 
+# --- Thumbnail Preset Handlers ---
+
+@Client.on_callback_query(filters.regex(r'^thumbnail_preset$'))
+async def thumbnail_preset_menu(bot, query):
+    user_id = query.from_user.id
+    data = await db.get_configs(user_id)
+    thumb_id = data.get('thumbnail_file_id')
+    thumb_status = "ON" if thumb_id else "OFF"
+    text = (
+        f"<b>🖼️ Thumbnail Preset</b>\n\n"
+        f"<b>Status:</b> {thumb_status}\n"
+        f"\nChoose an option:"
+    )
+    buttons = [
+        [InlineKeyboardButton("🟢 Enable/Change", callback_data="thumbnail_enable")],
+        [InlineKeyboardButton("🔴 Disable", callback_data="thumbnail_disable")],
+        [InlineKeyboardButton("⬅️ Back", callback_data="settings#main")],
+    ]
+    await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(buttons))
+
+@Client.on_callback_query(filters.regex(r'^thumbnail_enable$'))
+async def thumbnail_enable(bot, query):
+    await query.message.edit("Please send me the photo you want as your thumbnail (from your gallery):")
+    response = await bot.ask(query.from_user.id, "Send a photo from your gallery to set as thumbnail.", timeout=120)
+    if not is_valid_thumbnail(response):
+        await response.reply("❌ Invalid thumbnail. Please send a photo or image document.")
+        return
+    file_id = response.photo.file_id if response.photo else response.document.file_id
+    await save_user_thumbnail(query.from_user.id, file_id)
+    await response.reply("✅ Thumbnail set successfully!")
+    await thumbnail_preset_menu(bot, query)
+
+@Client.on_callback_query(filters.regex(r'^thumbnail_disable$'))
+async def thumbnail_disable(bot, query):
+    await delete_user_thumbnail(query.from_user.id)
+    await query.answer("Thumbnail feature disabled.")
+    await thumbnail_preset_menu(bot, query)
+
 # --- When forwarding/copying, apply the preset ---
 # Example usage in your copy/forward logic:
 # user_config = await db.get_configs(user_id)
@@ -194,7 +234,16 @@ async def caption_off(bot, query):
 #     delete=caption_settings.get("delete", False)
 # )
 # Use new_caption as the caption when sending or copying messages.
+#
+# For thumbnails (video, document, PDF, etc.):
+# thumb_id = await get_user_thumbnail(user_id)
+# send_kwargs = dict(chat_id=target_chat_id, caption=new_caption)
+# if thumb_id:
+#     send_kwargs['thumb'] = thumb_id
+# await bot.send_document(document=file_id, **send_kwargs)
+# await bot.send_video(video=file_id, **send_kwargs)
+# ...etc.
 
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
-# Ask Doubt on telegram @KingVJ01
+# Ask Doubt on telegram @KingVJ01 
