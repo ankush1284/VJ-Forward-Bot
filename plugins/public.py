@@ -14,9 +14,18 @@ from pyrogram.errors.exceptions.not_acceptable_406 import ChannelPrivate as Priv
 from pyrogram.errors.exceptions.bad_request_400 import ChannelInvalid, ChatAdminRequired, UsernameInvalid, UsernameNotModified, ChannelPrivate
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 
+# --- Caption Preset import ---
+from plugins.caption_manager import apply_caption_rules
+
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
+
+def main_buttons():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("📝 Caption Preset", callback_data="caption_preset")],
+        # ... add your other settings buttons here ...
+    ])
 
 @Client.on_message(filters.private & filters.command(["forward"]))
 async def run(bot, message):
@@ -69,8 +78,6 @@ async def run(bot, message):
         return 
     try:
         title = (await bot.get_chat(chat_id)).title
-  #  except ChannelInvalid:
-        #return await fromid.reply("**Given source chat is copyrighted channel/group. you can't forward messages from there**")
     except (PrivateChat, ChannelPrivate, ChannelInvalid):
         title = "private" if fromid.text else fromid.forward_from_chat.title
     except (UsernameInvalid, UsernameNotModified):
@@ -93,6 +100,100 @@ async def run(bot, message):
         reply_markup=reply_markup
     )
     STS(forward_id).store(chat_id, toid, int(skipno.text), int(last_msg_id))
+
+# --- Caption Preset Handlers ---
+
+@Client.on_callback_query(filters.regex(r'^caption_preset$'))
+async def caption_preset_menu(bot, query):
+    user_id = query.from_user.id
+    user_config = await db.get_configs(user_id)
+    caption_settings = user_config.get("caption_settings", {})
+    text = (
+        "<b>📝 Caption Preset</b>\n\n"
+        f"<b>Status:</b> {'ON' if caption_settings.get('mode', 'on') == 'on' else 'OFF'}\n"
+        f"<b>Add Text:</b> {caption_settings.get('add_text', 'None')}\n"
+        f"<b>Replace:</b> {caption_settings.get('replace_dict', {})}\n"
+        f"<b>Delete Caption:</b> {'Yes' if caption_settings.get('delete', False) else 'No'}\n"
+        "\nChoose what you want to edit:"
+    )
+    buttons = [
+        [InlineKeyboardButton("➕ Add Text", callback_data="caption_addtext")],
+        [InlineKeyboardButton("🔁 Replace", callback_data="caption_replace")],
+        [InlineKeyboardButton("🚫 Delete", callback_data="caption_delete")],
+        [InlineKeyboardButton("🟢 On", callback_data="caption_on"),
+         InlineKeyboardButton("🔴 Off", callback_data="caption_off")],
+        [InlineKeyboardButton("⬅️ Back", callback_data="settings#main")],
+    ]
+    await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(buttons))
+
+@Client.on_callback_query(filters.regex(r'^caption_addtext$'))
+async def caption_addtext(bot, query):
+    await query.message.edit("Send me the text you want to add to every caption:")
+    response = await bot.ask(query.from_user.id, "Please send the text to add to all captions.", timeout=60)
+    user_id = query.from_user.id
+    config = await db.get_configs(user_id)
+    config.setdefault("caption_settings", {})["add_text"] = response.text
+    await db.update_configs(user_id, config)
+    await response.reply("✅ Added text to caption.")
+    await caption_preset_menu(bot, query)
+
+@Client.on_callback_query(filters.regex(r'^caption_replace$'))
+async def caption_replace(bot, query):
+    await query.message.edit("Send replacements in the format:\n<code>old1:new1,old2:new2</code>")
+    response = await bot.ask(query.from_user.id, "Send replacements in the format:\n<code>old1:new1,old2:new2</code>", timeout=120)
+    user_id = query.from_user.id
+    config = await db.get_configs(user_id)
+    replace_dict = {}
+    for pair in response.text.split(","):
+        if ":" in pair:
+            old, new = pair.split(":", 1)
+            replace_dict[old.strip()] = new.strip()
+    config.setdefault("caption_settings", {})["replace_dict"] = replace_dict
+    await db.update_configs(user_id, config)
+    await response.reply("✅ Replacement rules saved.")
+    await caption_preset_menu(bot, query)
+
+@Client.on_callback_query(filters.regex(r'^caption_delete$'))
+async def caption_delete(bot, query):
+    user_id = query.from_user.id
+    config = await db.get_configs(user_id)
+    config.setdefault("caption_settings", {})["delete"] = True
+    await db.update_configs(user_id, config)
+    await query.answer("Caption will be deleted.")
+    await caption_preset_menu(bot, query)
+
+@Client.on_callback_query(filters.regex(r'^caption_on$'))
+async def caption_on(bot, query):
+    user_id = query.from_user.id
+    config = await db.get_configs(user_id)
+    config.setdefault("caption_settings", {})["mode"] = "on"
+    config["caption_settings"]["delete"] = False
+    await db.update_configs(user_id, config)
+    await query.answer("Caption ON.")
+    await caption_preset_menu(bot, query)
+
+@Client.on_callback_query(filters.regex(r'^caption_off$'))
+async def caption_off(bot, query):
+    user_id = query.from_user.id
+    config = await db.get_configs(user_id)
+    config.setdefault("caption_settings", {})["mode"] = "off"
+    config["caption_settings"]["delete"] = False
+    await db.update_configs(user_id, config)
+    await query.answer("Caption OFF.")
+    await caption_preset_menu(bot, query)
+
+# --- When forwarding/copying, apply the preset ---
+# Example usage in your copy/forward logic:
+# user_config = await db.get_configs(user_id)
+# caption_settings = user_config.get("caption_settings", {})
+# new_caption = apply_caption_rules(
+#     original_caption=msg.caption,
+#     mode=caption_settings.get("mode", "on"),
+#     add_text=caption_settings.get("add_text", ""),
+#     replace_dict=caption_settings.get("replace_dict", {}),
+#     delete=caption_settings.get("delete", False)
+# )
+# Use new_caption as the caption when sending or copying messages.
 
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
