@@ -1,40 +1,31 @@
-from flask import Flask, request
-from pyrogram import Client
-import os
 import threading
-import asyncio
-
+from flask import Flask
+from pyrogram import Client
 from config import Config
 
+# Flask app for health check or status page
 app = Flask(__name__)
 
-# Initialize Pyrogram Client (bot)
-bot = Client(
-    "VJ-Forward-Bot",
-    bot_token=Config.BOT_TOKEN,
-    api_id=Config.API_ID,
-    api_hash=Config.API_HASH,
-    plugins=dict(root="plugins")
-)
-
-# Start the Pyrogram client in a background thread for webhook mode
-def start_bot():
-    asyncio.set_event_loop(asyncio.new_event_loop())
-    bot.run()
-
-threading.Thread(target=start_bot, daemon=True).start()
-
 @app.route('/')
-def hello_world():
-    return 'Hello from Koyeb!'
+def home():
+    return "VJ Forward Bot is running!"
 
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    update = request.get_json(force=True)
-    if update:
-        bot.process_new_updates([update])
-    return "ok", 200
+def run_flask():
+    # Use 0.0.0.0 to accept external connections if needed
+    app.run(host="0.0.0.0", port=8080)
 
 if __name__ == "__main__":
-    port = int(os.environ.get('PORT', 8080))
-    app.run(host='0.0.0.0', port=port)
+    # Start Flask in a background thread
+    flask_thread = threading.Thread(target=run_flask)
+    flask_thread.daemon = True
+    flask_thread.start()
+
+    # Start Pyrogram bot in the main thread (this is REQUIRED)
+    bot = Client(
+        "my_bot",
+        api_id=Config.API_ID,
+        api_hash=Config.API_HASH,
+        bot_token=Config.BOT_TOKEN,
+        plugins=dict(root="plugins")
+    )
+    bot.run()
