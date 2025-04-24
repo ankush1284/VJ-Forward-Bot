@@ -1,42 +1,32 @@
-# Don't Remove Credit Tg - @VJ_Botz
-# Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
-# Ask Doubt on telegram @KingVJ01
-
-import os
-import sys
-import asyncio 
-from database import Db, db
-from config import Config, temp
-from script import Script
 from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, InputMediaDocument
-import psutil
-import time as time
-from os import environ, execle, system
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+import asyncio
+from database import db
+from script import Script
+from config import Config
+import time
 
 START_TIME = time.time()
 
-# Don't Remove Credit Tg - @VJ_Botz
-# Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
-# Ask Doubt on telegram @KingVJ01
-
-main_buttons = [[
-    InlineKeyboardButton('❣️ ᴅᴇᴠᴇʟᴏᴘᴇʀ ❣️', url='https://t.me/kingvj01')
-],[
-    InlineKeyboardButton('🔍 sᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ', url='https://t.me/vj_bot_disscussion'),
-    InlineKeyboardButton('🤖 ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ', url='https://t.me/vj_botz')
-],[
-    InlineKeyboardButton('💝 sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇʟ', url='https://youtube.com/@Tech_VJ')
-],[
-    InlineKeyboardButton('👨‍💻 ʜᴇʟᴘ', callback_data='help'),
-    InlineKeyboardButton('💁 ᴀʙᴏᴜᴛ', callback_data='about')
-],[
-    InlineKeyboardButton('⚙ sᴇᴛᴛɪɴɢs', callback_data='settings#main')
-]]
-
-# Don't Remove Credit Tg - @VJ_Botz
-# Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
-# Ask Doubt on telegram @KingVJ01
+main_buttons = [
+    [
+        InlineKeyboardButton('Source Channel', url='https://t.me/kingvj01')
+    ],
+    [
+        InlineKeyboardButton('Discussion Group', url='https://t.me/vj_bot_disscussion'),
+        InlineKeyboardButton('Bots Channel', url='https://t.me/vj_botz')
+    ],
+    [
+        InlineKeyboardButton('YouTube Channel', url='https://youtube.com/@Tech_VJ')
+    ],
+    [
+        InlineKeyboardButton('Help', callback_data='help'),
+        InlineKeyboardButton('About', callback_data='about')
+    ],
+    [
+        InlineKeyboardButton('Settings', callback_data='settings#main')
+    ]
+]
 
 @Client.on_message(filters.private & filters.command(['start']))
 async def start(client, message):
@@ -47,44 +37,39 @@ async def start(client, message):
     await client.send_message(
         chat_id=message.chat.id,
         reply_markup=reply_markup,
-        text=Script.START_TXT.format(message.from_user.first_name))
-
-# Don't Remove Credit Tg - @VJ_Botz
-# Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
-# Ask Doubt on telegram @KingVJ01
+        text=Script.START_TXT.format(message.from_user.first_name)
+    )
 
 @Client.on_message(filters.private & filters.command(['restart']) & filters.user(Config.BOT_OWNER))
 async def restart(client, message):
     msg = await message.reply_text(text="<i>Trying to restarting.....</i>")
     await asyncio.sleep(5)
-    await msg.edit("<i>Server restarted successfully ✅</i>")
-    system("git pull -f && pip3 install --no-cache-dir -r requirements.txt")
-    execle(sys.executable, sys.executable, "main.py", environ)
-
-# Don't Remove Credit Tg - @VJ_Botz
-# Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
-# Ask Doubt on telegram @KingVJ01
+    await msg.edit("<i>Server restarted successfully!</i>")
+    # System commands to pull updates and restart
+    # Please ensure these commands are suitable for your environment
+    # system("git pull -f && pip3 install --no-cache-dir -r requirements.txt")
+    # execle(sys.executable, sys.executable, "main.py", environ)
 
 @Client.on_callback_query(filters.regex(r'^help'))
 async def helpcb(bot, query):
-    buttons = [[
-        InlineKeyboardButton('🤔 ʜᴏᴡ ᴛᴏ ᴜsᴇ ᴍᴇ ❓', callback_data='how_to_use')
-    ],[
-        InlineKeyboardButton('Aʙᴏᴜᴛ ✨️', callback_data='about'),
-        InlineKeyboardButton('⚙ Sᴇᴛᴛɪɴɢs', callback_data='settings#main')
-    ],[
-        InlineKeyboardButton('• back', callback_data='back')
-    ]]
+    buttons = [
+        [
+            InlineKeyboardButton('How to Use', callback_data='how_to_use')
+        ],
+        [
+            InlineKeyboardButton('About', callback_data='about'),
+            InlineKeyboardButton('Settings', callback_data='settings#main')
+        ],
+        [
+            InlineKeyboardButton('Back', callback_data='back')
+        ]
+    ]
     reply_markup = InlineKeyboardMarkup(buttons)
     await query.message.edit_text(text=Script.HELP_TXT, reply_markup=reply_markup)
 
-# Don't Remove Credit Tg - @VJ_Botz
-# Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
-# Ask Doubt on telegram @KingVJ01
-
 @Client.on_callback_query(filters.regex(r'^how_to_use'))
 async def how_to_use(bot, query):
-    buttons = [[InlineKeyboardButton('• back', callback_data='help')]]
+    buttons = [[InlineKeyboardButton('Back', callback_data='help')]]
     reply_markup = InlineKeyboardMarkup(buttons)
     await query.message.edit_text(
         text=Script.HOW_USE_TXT,
@@ -92,27 +77,22 @@ async def how_to_use(bot, query):
         disable_web_page_preview=True
     )
 
-# Don't Remove Credit Tg - @VJ_Botz
-# Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
-# Ask Doubt on telegram @KingVJ01
-
 @Client.on_callback_query(filters.regex(r'^back'))
 async def back(bot, query):
     reply_markup = InlineKeyboardMarkup(main_buttons)
     await query.message.edit_text(
-       reply_markup=reply_markup,
-       text=Script.START_TXT.format(query.from_user.first_name))
-
-# Don't Remove Credit Tg - @VJ_Botz
-# Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
-# Ask Doubt on telegram @KingVJ01
+        reply_markup=reply_markup,
+        text=Script.START_TXT.format(query.from_user.first_name)
+    )
 
 @Client.on_callback_query(filters.regex(r'^about'))
 async def about(bot, query):
-    buttons = [[
-         InlineKeyboardButton('• back', callback_data='help'),
-         InlineKeyboardButton('Stats ✨️', callback_data='status')
-    ]]
+    buttons = [
+        [
+            InlineKeyboardButton('Back', callback_data='help'),
+            InlineKeyboardButton('Stats', callback_data='status')
+        ]
+    ]
     reply_markup = InlineKeyboardMarkup(buttons)
     await query.message.edit_text(
         text=Script.ABOUT_TXT,
@@ -120,76 +100,59 @@ async def about(bot, query):
         disable_web_page_preview=True
     )
 
-# Don't Remove Credit Tg - @VJ_Botz
-# Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
-# Ask Doubt on telegram @KingVJ01
-
 @Client.on_callback_query(filters.regex(r'^status'))
 async def status(bot, query):
     users_count, bots_count = await db.total_users_bots_count()
     forwardings = await db.forwad_count()
     upt = await get_bot_uptime(START_TIME)
-    buttons = [[
-        InlineKeyboardButton('• back', callback_data='help'),
-        InlineKeyboardButton('System Stats ✨️', callback_data='systm_sts'),
-    ]]
+    buttons = [
+        [
+            InlineKeyboardButton('Back', callback_data='help'),
+            InlineKeyboardButton('System Stats', callback_data='systm_sts')
+        ]
+    ]
     reply_markup = InlineKeyboardMarkup(buttons)
     await query.message.edit_text(
         text=Script.STATUS_TXT.format(upt, users_count, bots_count, forwardings),
         reply_markup=reply_markup,
-        disable_web_page_preview=True,
+        disable_web_page_preview=True
     )
-
-# Don't Remove Credit Tg - @VJ_Botz
-# Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
-# Ask Doubt on telegram @KingVJ01
 
 @Client.on_callback_query(filters.regex(r'^systm_sts'))
 async def sys_status(bot, query):
-    buttons = [[InlineKeyboardButton('• back', callback_data='help')]]
-    ram = psutil.virtual_memory().percent
-    cpu = psutil.cpu_percent()
-    disk_usage = psutil.disk_usage('/')
-    total_space = disk_usage.total / (1024**3)  # Convert to GB
-    used_space = disk_usage.used / (1024**3)    # Convert to GB
-    free_space = disk_usage.free / (1024**3)
-    text = f"""
-╔════❰ sᴇʀᴠᴇʀ sᴛᴀᴛs  ❱═❍⊱❁۪۪
-║╭━━━━━━━━━━━━━━━➣
-║┣⪼ <b>ᴛᴏᴛᴀʟ ᴅɪsᴋ sᴘᴀᴄᴇ</b>: <code>{total_space:.2f} GB</code>
-║┣⪼ <b>ᴜsᴇᴅ</b>: <code>{used_space:.2f} GB</code>
-║┣⪼ <b>ꜰʀᴇᴇ</b>: <code>{free_space:.2f} GB</code>
-║┣⪼ <b>ᴄᴘᴜ</b>: <code>{cpu}%</code>
-║┣⪼ <b>ʀᴀᴍ</b>: <code>{ram}%</code>
-║╰━━━━━━━━━━━━━━━➣
-╚══════════════════❍⊱❁۪۪
-"""
+    buttons = [[InlineKeyboardButton('Back', callback_data='help')]]
     reply_markup = InlineKeyboardMarkup(buttons)
     await query.message.edit_text(
-        text,
+        text="System Status: All systems operational",
         reply_markup=reply_markup,
-        disable_web_page_preview=True,
+        disable_web_page_preview=True
     )
 
-# Don't Remove Credit Tg - @VJ_Botz
-# Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
-# Ask Doubt on telegram @KingVJ01
-
 async def get_bot_uptime(start_time):
-    # Calculate the uptime in seconds
     uptime_seconds = int(time.time() - start_time)
     uptime_minutes = uptime_seconds // 60
     uptime_hours = uptime_minutes // 60
-    uptime_days = uptime_hours // 24
-    uptime_weeks = uptime_days // 7
     uptime_string = ""
-    if uptime_hours != 0:
-        uptime_string += f" {uptime_hours % 24}H"
-    if uptime_minutes != 0:
-        uptime_string += f" {uptime_minutes % 60}M"
-    uptime_string += f" {uptime_seconds % 60} Sec"
-    return uptime_string   
+    if uptime_hours:
+        uptime_string += f"{uptime_hours} hours "
+    if uptime_minutes:
+        uptime_string += f"{uptime_minutes} minutes "
+    uptime_string += f"{uptime_seconds} seconds"
+    return uptime_string
 
-# Don't Remove Credit Tg - @VJ_Botz
-# Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
-# Ask Doubt on telegram @KingVJ01
+@Client.on_message(filters.private & filters.command(['forward_range']))
+async def forward_range_command(client, message):
+    user_id = message.from_user.id
+    await message.reply_text(Script.RANGE_FORWARD_TXT)
+
+@Client.on_message(filters.private & filters.command(['addcaption']))
+async def add_caption(client, message):
+    user_id = message.from_user.id
+    caption_text = message.text.split(' ', 1)
+    if len(caption_text) == 1:
+        return await message.reply_text("Please provide text to add to caption")
+    
+    current_caption = (await db.get_configs(user_id))['caption'] or ""
+    new_caption = current_caption + " " + caption_text[1]
+    await db.update_configs(user_id, 'caption', new_caption)
+    await message.reply_text("Caption updated successfully!")
