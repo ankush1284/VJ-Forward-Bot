@@ -45,10 +45,6 @@ async def restart(client, message):
     msg = await message.reply_text(text="<i>Trying to restarting.....</i>")
     await asyncio.sleep(5)
     await msg.edit("<i>Server restarted successfully!</i>")
-    # System commands to pull updates and restart
-    # Please ensure these commands are suitable for your environment
-    # system("git pull -f && pip3 install --no-cache-dir -r requirements.txt")
-    # execle(sys.executable, sys.executable, "main.py", environ)
 
 @Client.on_callback_query(filters.regex(r'^help'))
 async def helpcb(bot, query):
