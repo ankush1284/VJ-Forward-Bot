@@ -1,7 +1,5 @@
-# plugins/thumbnail_enforcer.py
-
 from pyrogram.types import Message
-from database import db  # Adjust if your db import is different
+from database import db  # Adjust import if needed
 
 async def save_user_thumbnail(user_id: int, file_id: str):
     await db.update_configs(user_id, 'thumbnail_file_id', file_id)
