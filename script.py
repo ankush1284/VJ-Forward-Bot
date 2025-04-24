@@ -1,18 +1,21 @@
-import os
-from config import Config
+import re
+import base64
+from pyrogram.file_id import FileId
+from datetime import datetime
 
-class  Script(object):
-  START_TXT = """<b>ʜɪ {}
+class Script(object):
+    START_TXT = """<b>ʜɪ {}
   
 ɪ'ᴍ ᴀ ᴀᴅᴠᴀɴᴄᴇᴅ ꜰᴏʀᴡᴀʀᴅ ʙᴏᴛ
 ɪ ᴄᴀɴ ꜰᴏʀᴡᴀʀᴅ ᴀʟʟ ᴍᴇssᴀɢᴇ ꜰʀᴏᴍ ᴏɴᴇ ᴄʜᴀɴɴᴇʟ ᴛᴏ ᴀɴᴏᴛʜᴇʀ ᴄʜᴀɴɴᴇʟ</b>
 
 **ᴄʟɪᴄᴋ ʜᴇʟᴘ ʙᴜᴛᴛᴏɴ ᴛᴏ ᴋɴᴏᴡ ᴍᴏʀᴇ ᴀʙᴏᴜᴛ ᴍᴇ**"""
-  HELP_TXT = """<b><u>🔆 Help</b></u>
+    HELP_TXT = """<b><u>🔆 Help</b></u>
 
 <u>**📚 Available commands:**</u>
 <b>⏣ __/start - check I'm alive__ 
 ⏣ __/forward - forward messages__
+⏣ __/forward_range - forward messages within a range__
 ⏣ __/settings - configure your settings__
 ⏣ __ /unequify - delete duplicate media messages in chats__
 ⏣ __ /stop - stop your ongoing tasks__
@@ -25,17 +28,15 @@ class  Script(object):
 ► __skip duplicate messages__
 ► __filter type of messages__</b>
 """
-  
-  HOW_USE_TXT = """<b><u>⚠️ Before Forwarding:</b></u>
+    HOW_USE_TXT = """<b><u>⚠️ Before Forwarding:</b></u>
 <b>► __add a bot or userbot__
 ► __add atleast one to channel__ `(your bot/userbot must be admin in there)`
 ► __You can add chats or bots by using /settings__
 ► __if the **From Channel** is private your userbot must be member in there or your bot must need admin permission in there also__
-► __Then use /forward to forward messages__
+► __Then use /forward or /forward_range to forward messages__
 
 ► ʜᴏᴡ ᴛᴏ ᴜsᴇ ᴍᴇ [ᴛᴜᴛᴏʀɪᴀʟ ᴠɪᴅᴇᴏ](https://youtu.be/wO1FE-lf35I)</b>"""
-  
-  ABOUT_TXT = """<b>
+    ABOUT_TXT = """<b>
 ╔════❰ ғᴏʀᴡᴀʀᴅ ʙᴏᴛ ❱═❍⊱❁۪۪
 ║╭━━━━━━━━━━━━━━━➣
 ║┣⪼📃ʙᴏᴛ : [Fᴏʀᴡᴀᴅ Bᴏᴛ](https://t.me/VJForwardBot)
@@ -47,8 +48,8 @@ class  Script(object):
 ║┣⪼🗒️Vᴇʀsɪᴏɴ : 0.18.3
 ║╰━━━━━━━━━━━━━━━➣
 ╚══════════════════❍⊱❁۪۪
-</b>"""
-  STATUS_TXT = """
+"""
+    STATUS_TXT = """
 ╔════❰ ʙᴏᴛ sᴛᴀᴛᴜs  ❱═❍⊱❁۪۪
 ║╭━━━━━━━━━━━━━━━➣
 ║┣⪼**⏳ ʙᴏᴛ ᴜᴘᴛɪᴍᴇ:**`{}`
@@ -62,14 +63,14 @@ class  Script(object):
 ║╰━━━━━━━━━━━━━━━➣
 ╚══════════════════❍⊱❁۪۪
 """
-  FROM_MSG = "<b>❪ SET SOURCE CHAT ❫\n\nForward the last message or last message link of source chat.\n/cancel - cancel this process</b>"
-  TO_MSG = "<b>❪ CHOOSE TARGET CHAT ❫\n\nChoose your target chat from the given buttons.\n/cancel - Cancel this process</b>"
-  SKIP_MSG = "<b>❪ SET MESSAGE SKIPING NUMBER ❫</b>\n\n<b>Skip the message as much as you enter the number and the rest of the message will be forwarded\nDefault Skip Number =</b> <code>0</code>\n<code>eg: You enter 0 = 0 message skiped\n You enter 5 = 5 message skiped</code>\n/cancel <b>- cancel this process</b>"
-  CANCEL = "<b>Process Cancelled Succefully !</b>"
-  BOT_DETAILS = "<b><u>📄 BOT DETAILS</b></u>\n\n<b>➣ NAME:</b> <code>{}</code>\n<b>➣ BOT ID:</b> <code>{}</code>\n<b>➣ USERNAME:</b> @{}"
-  USER_DETAILS = "<b><u>📄 USERBOT DETAILS</b></u>\n\n<b>➣ NAME:</b> <code>{}</code>\n<b>➣ USER ID:</b> <code>{}</code>\n<b>➣ USERNAME:</b> @{}"  
+    FROM_MSG = "<b>❪ SET SOURCE CHAT ❫\n\nForward the last message or last message link of source chat.\n/cancel - cancel this process</b>"
+    TO_MSG = "<b>❪ CHOOSE TARGET CHAT ❫\n\nChoose your target chat from the given buttons.\n/cancel - Cancel this process</b>"
+    SKIP_MSG = "<b>/GPL SET MESSAGE SKIPING NUMBER ❫</b>\n\n<b>Skip the message as much as you enter the number and the rest of the message will be forwarded\nDefault Skip Number =</b> <code>0</code>\n<code>eg: You enter 0 = 0 message skiped\n You enter 5 = 5 message skiped</code>\n/cancel <b>- cancel this process</b>"
+    CANCEL = "<b>Process Cancelled Succefully !</b>"
+    BOT_DETAILS = "<b><u>📄 BOT DETAILS</b></u>\n\n<b>➣ NAME:</b> <code>{}</code>\n<b>➣ BOT ID:</b> <code>{}</code>\n<b>➣ USERNAME:</b> @{}"
+    USER_DETAILS = "<b><u>📄 USERBOT DETAILS</b></u>\n\n<b>➣ NAME:</b> <code>{}</code>\n<b>➣ USER ID:</b> <code>{}</code>\n<b>➣ USERNAME:</b> @{}"  
          
-  TEXT = """
+    TEXT = """
 ╔════❰ ғᴏʀᴡᴀʀᴅ sᴛᴀᴛᴜs  ❱═❍⊱❁۪۪
 ║╭━━━━━━━━━━━━━━━➣
 ║┣⪼<b>🕵 ғᴇᴄʜᴇᴅ Msɢ :</b> <code>{}</code>
@@ -88,18 +89,18 @@ class  Script(object):
 ║┃
 ║┣⪼<b>𖨠 Pᴇʀᴄᴇɴᴛᴀɢᴇ:</b> <code>{}</code> %
 ║╰━━━━━━━━━━━━━━━➣ 
-╚════❰ {} ❱══❍⊱❁۪۪
+╚════◁ {} ❱══❍⊱❁۪۪
 """
-  DUPLICATE_TEXT = """
-╔════❰ ᴜɴᴇǫᴜɪғʏ sᴛᴀᴛᴜs ❱═❍⊱❁۪۪
+    DUPLICATE_TEXT = """
+╔════◁ ᴜɴᴇǫᴜɪғʏ sᴛᴀᴛᴜs ❱══❍⊱❁۪۪
 ║╭━━━━━━━━━━━━━━━➣
 ║┣⪼ <b>ғᴇᴛᴄʜᴇᴅ ғɪʟᴇs:</b> <code>{}</code>
 ║┃
 ║┣⪼ <b>ᴅᴜᴘʟɪᴄᴀᴛᴇ ᴅᴇʟᴇᴛᴇᴅ:</b> <code>{}</code> 
 ║╰━━━━━━━━━━━━━━━➣
-╚════❰ {} ❱══❍⊱❁۪۪
+╚══════════════════❍⊱❁۪۪
 """
-  DOUBLE_CHECK = """<b><u>DOUBLE CHECKING ⚠️</b></u>
+    DOUBLE_CHECK = """<b><u>DOUBLE CHECKING ⚠️</b></u>
 <code>Before forwarding the messages Click the Yes button only after checking the following</code>
 
 <b>★ YOUR BOT:</b> [{botname}](t.me/{botuname})
@@ -111,5 +112,8 @@ class  Script(object):
 <i>° If the **SOURCE CHAT** is private your userbot must be member or your bot must be admin in there also</b></i>
 
 <b>If the above is checked then the yes button can be clicked</b>"""
-  
-SETTINGS_TXT = """<b>change your settings as your wish</b>"""
+    
+    RANGE_FORWARD_TXT = """<b>GPL SET MESSAGE RANGE ❫</b>\n\n<b>Send the link to the first message in the range</b>\n/cancel - cancel this process"""
+    RANGE_FORWARD_TXT2 = """<b>GPL SET MESSAGE RANGE ❫</b>\n\n<b>Send the link to the last message in the range</b>\n/cancel - cancel this process"""
+    
+    CAPTION_CUSTOMIZATION_TXT = """<b>/GPL CUSTOMIZE CAPTION ❫</b>\n\nHere are your current caption settings. You can use the following commands to customize your caption:\n\n/addcaption [text] - Add text to caption\n/deletecaption [text] - Delete text from caption\n/replacecaption [old_text] [new_text] - Replace text in caption\n/offcaption - Turn off caption\n\nCurrent caption: <code>{}</code>"""
