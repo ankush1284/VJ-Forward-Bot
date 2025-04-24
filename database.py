@@ -20,6 +20,9 @@ class Db:
                 is_banned=False,
                 ban_reason="",
             ),
+            caption=None,
+            filter_keywords=[],
+            exclude_users=[]
         )
 
     async def add_user(self, id, name):
@@ -99,7 +102,9 @@ class Db:
                'document': True,
                'animation': True,
                'sticker': True
-            }
+            },
+            'filter_keywords': [],
+            'exclude_users': []
         }
         user = await self.col.find_one({'id':int(id)})
         if user:
@@ -200,7 +205,7 @@ class Db:
             'total': 0,
             'duplicate': 0,
             'skip': 0,
-            'filtered' :0
+            'filtered':0
         }
         user = await self.nfy.find_one({'user_id': int(user_id)})
         if user:
