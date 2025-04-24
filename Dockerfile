@@ -1,12 +1,12 @@
-FROM python:3.10.8-slim-buster
+FROM python:3.10
 
-RUN apt update && apt upgrade -y
-RUN apt install git -y
-COPY requirements.txt /requirements.txt
+WORKDIR /app
 
-RUN cd /
-RUN pip3 install -U pip && pip3 install -U -r requirements.txt
-RUN mkdir /VJ-Forward-Bot
-WORKDIR /VJ-Forward-Bot
-COPY . /VJ-Forward-Bot
-CMD gunicorn app:app & python3 main.py
+COPY requirements.txt .
+
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+
+COPY . .
+
+CMD ["python", "app.py"]
