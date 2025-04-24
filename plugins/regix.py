@@ -9,7 +9,7 @@ import time, re
 import asyncio 
 import logging
 # Existing imports (DON'T TOUCH these)
-from config import Config, temp
+from config import Config
 from database import db
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
