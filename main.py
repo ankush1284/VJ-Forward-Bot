@@ -1,19 +1,20 @@
-import asyncio
-from config import Config
-from pyrogram import Client, idle
+from pyrogram import Client
+from plugins import *
+from config import *
+
+app = Client("forwardbot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+
+# Load all plugin handlers
+import plugins.broadcast
+import plugins.commands
+import plugins.db
+import plugins.public
+import plugins.regix
+import plugins.settings
+import plugins.test
+import plugins.unequeify
+import plugins.utils
 
 if __name__ == "__main__":
-    VJBot = Client(
-        "VJ-Forward-Bot",
-        bot_token=Config.BOT_TOKEN,
-        api_id=Config.API_ID,
-        api_hash=Config.API_HASH,
-        plugins=dict(root="plugins")
-    )
-
-    async def main():
-        await VJBot.start()
-        print("Bot Started.")
-        await idle()
-
-    asyncio.run(main())
+    print("Bot is starting...")
+    app.run()  # This ensures the bot starts and keeps listening
